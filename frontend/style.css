@@ -1,0 +1,317 @@
+:root {
+    --bg-color: #0d0e12;
+    --panel-bg: #161820;
+    --panel-hover: #222531;
+    --text-main: #ffffff;
+    --text-muted: #868996;
+    --border: rgba(255, 255, 255, 0.05);
+    --modal-overlay: rgba(5, 5, 8, 0.8);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 550px;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.main-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.logo {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -2.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #a5a5a5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 40px;
+    letter-spacing: 0.5px;
+}
+
+.create-btn {
+    background-color: var(--text-main);
+    color: var(--bg-color);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 99px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 24px rgba(255, 255, 255, 0.08);
+    margin-bottom: 40px;
+}
+
+.create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(255, 255, 255, 0.15);
+    background-color: #f3f4f6;
+}
+
+.chats-list {
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 6px;
+}
+
+.chats-list::-webkit-scrollbar {
+    width: 4px;
+}
+.chats-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.chats-list::-webkit-scrollbar-thumb {
+    background: var(--panel-hover);
+    border-radius: 10px;
+}
+
+.chat-item {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 18px 24px;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-item:hover {
+    background-color: var(--panel-hover);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.01);
+}
+
+.chat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chat-title {
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: -0.2px;
+}
+
+.chat-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.arrow-icon {
+    color: var(--text-muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.chat-item:hover .arrow-icon {
+    color: var(--text-main);
+    transform: translateX(3px);
+}
+
+.chat-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(15px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    color: var(--text-main);
+    background-color: var(--panel-bg);
+}
+
+.chat-current-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.chat-body {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+}
+
+/* СТИЛИ ДЛЯ КАСТОМНОГО МОДАЛЬНОГО ОКНА */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-overlay);
+    backdrop-filter: blur(8px); /* Красивое размытие заднего фона */
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-window {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    width: 90%;
+    max-width: 400px;
+    padding: 28px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform: scale(0.95);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.active .modal-window {
+    transform: scale(1);
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+}
+
+.modal-input {
+    width: 100%;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+}
+
+.modal-input:focus {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-btn {
+    padding: 12px 20px;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.btn-secondary:hover {
+    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.btn-primary {
+    background-color: var(--text-main);
+    color: var(--bg-color);
+}
+
+.btn-primary:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-1px);
+}
