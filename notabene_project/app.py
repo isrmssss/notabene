@@ -8,12 +8,9 @@ import database
 
 app = FastAPI(title="notabene AI")
 
-# Подключаем статику и шаблоны
-# Обязательно убедись, что папки "static" и "templates" созданы в корне проекта!
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# Инициализация БД при старте приложения
 database.init_db()
 
 # --- Схемы валидации данных (Pydantic) ---
@@ -47,5 +44,4 @@ async def add_provider(provider: ProviderSchema):
 
 if __name__ == "__main__":
     import uvicorn
-    # ИСПРАВЛЕНО: Комментарий изменен на Python-style (# вместо //)
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=False)
