@@ -1,0 +1,32 @@
+<div class="modal-window provider-form-window">
+    <h3 class="modal-title" id="providerFormTitle">{title}</h3>
+    <form hx-post="/htmx/providers" hx-target="#providersList" hx-swap="innerHTML" onsubmit="closeModal('providerFormOverlay')">
+        <div class="form-group">
+            <label>Название провайдера</label>
+            <input type="text" class="modal-input" name="name" placeholder="Например: OpenAI, Ollama, Groq..." value="{name}" {disabled_attr} required>
+        </div>
+
+        <div class="form-group">
+            <label>API Ключ</label>
+            <input type="password" class="modal-input" name="api_key" placeholder="sk-..." value="{api_key}">
+        </div>
+
+        <div class="form-group">
+            <label>Base URL (необязательно)</label>
+            <input type="text" class="modal-input" name="base_url" placeholder="https://api.openai.com/v1" value="{base_url}">
+        </div>
+
+        <div class="models-section">
+            <label>Модели провайдера</label>
+            <div id="modelsFormList" class="models-form-list">
+                {models_html}
+            </div>
+            <button type="button" class="add-model-line-btn" onclick="addModelInputRow()">+ Добавить модель</button>
+        </div>
+
+        <div class="modal-buttons">
+            <button type="button" class="modal-btn btn-secondary" onclick="closeModal('providerFormOverlay')">Назад</button>
+            <button type="submit" class="modal-btn btn-primary">Сохранить в БД</button>
+        </div>
+    </form>
+</div>

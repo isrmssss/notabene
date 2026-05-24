@@ -8,18 +8,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- ИСПРАВЛЕНО: Теперь стили подключаются через шаблонизатор Jinja2 -->
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.11"></script>
 </head>
 <body>
 
     <div class="app-container">
 
-        <!-- ГЛАВНАЯ СТРАНИЦА -->
         <div class="main-screen" id="mainScreen">
-            <!-- Кнопка настроек в правом верхнем углу главного экрана -->
             <button class="settings-trigger-btn" id="openSettingsBtn" title="Настройки">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </button>
 
             <h1 class="logo">notabene</h1>
@@ -30,10 +28,10 @@
                 Создать чат
             </button>
 
-            <div class="chats-list" id="chatsList"></div>
+            <div class="chats-list" id="chatsList">
+            </div>
         </div>
 
-        <!-- СТРАНИЦА ЧАТА -->
         <div class="chat-screen" id="chatScreen">
             <div class="chat-header">
                 <button class="back-btn" id="backBtn">
@@ -42,45 +40,44 @@
                 <span class="chat-current-title" id="chatCurrentTitle">Название чата</span>
             </div>
             <div class="chat-body">
-                Здесь пока ничего нет...
+                <div id="chatMessages">
+                </div>
             </div>
         </div>
 
     </div>
 
-    <!-- МОДАЛКА: СОЗДАНИЕ ЧАТА -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-window">
             <h3 class="modal-title">Новый блокнот</h3>
-            <input type="text" class="modal-input" id="chatNameInput" placeholder="Название чата..." autocomplete="off">
-            <div class="modal-buttons">
-                <button class="modal-btn btn-secondary" id="cancelModalBtn">Отмена</button>
-                <button class="modal-btn btn-primary" id="confirmModalBtn">Создать</button>
-            </div>
+            <form hx-post="/htmx/chat" hx-target="#chatsList" hx-swap="beforebegin">
+                <input type="text" class="modal-input" name="chat_name" placeholder="Название чата..." autocomplete="off" required>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn btn-secondary" id="cancelModalBtn">Отмена</button>
+                    <button type="submit" class="modal-btn btn-primary">Создать</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- ОКНО НАСТРОЕК (МАСШТАБИРУЕМОЕ) -->
     <div class="modal-overlay" id="settingsOverlay">
         <div class="modal-window settings-window">
             <div class="settings-layout">
-                <!-- Сайдбар настроек -->
                 <div class="settings-sidebar">
                     <div class="sidebar-item active" data-tab="providers">LLM Провайдеры</div>
                     <div class="sidebar-item disabled" title="Будет добавлено позже">Интерфейс</div>
                 </div>
 
-                <!-- Основной контент настроек -->
                 <div class="settings-content">
                     <div class="tab-content active" id="tab-providers">
                         <h3 class="modal-title">Настройки LLM</h3>
                         <p class="settings-desc">Управляйте подключенными моделями искусственного интеллекта.</p>
 
                         <div class="providers-list" id="providersList">
-                            <!-- Сюда JS добавит сохраненных провайдеров -->
+                            <div style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px;">HTMX загрузит провайдеры при открытии настроек</div>
                         </div>
 
-                        <button class="add-provider-trigger" id="addNewProviderBtn">
+                        <button class="add-provider-trigger" id="addNewProviderBtn" hx-get="/htmx/provider-form" hx-target="#providerFormOverlay" hx-swap="innerHTML">
                             + Добавить провайдера
                         </button>
                     </div>
@@ -92,42 +89,9 @@
         </div>
     </div>
 
-    <!-- ОКНО: ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ ПРОВАЙДЕРА -->
     <div class="modal-overlay" id="providerFormOverlay">
-        <div class="modal-window provider-form-window">
-            <h3 class="modal-title" id="providerFormTitle">Новый провайдер</h3>
-
-            <div class="form-group">
-                <label>Название провайдера</label>
-                <input type="text" class="modal-input" id="provName" placeholder="Например: OpenAI, Ollama, Groq...">
-            </div>
-
-            <div class="form-group">
-                <label>API Ключ</label>
-                <input type="password" class="modal-input" id="provKey" placeholder="sk-...">
-            </div>
-
-            <div class="form-group">
-                <label>Base URL (необязательно)</label>
-                <input type="text" class="modal-input" id="provUrl" placeholder="https://api.openai.com/v1">
-            </div>
-
-            <div class="models-section">
-                <label>Модели провайдера</label>
-                <div id="modelsFormList" class="models-form-list">
-                    <!-- Список добавляемых моделей -->
-                </div>
-                <button type="button" class="add-model-line-btn" id="addModelLineBtn">+ Добавить модель</button>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="modal-btn btn-secondary" id="cancelProviderFormBtn">Назад</button>
-                <button class="modal-btn btn-primary" id="saveProviderFormBtn">Сохранить в БД</button>
-            </div>
-        </div>
     </div>
 
-    <!-- ИСПРАВЛЕНО: Скрипт теперь тоже подключается через Jinja2 -->
-    <script src="{{ url_for('static', path='script.js') }}" defer></script>
+    <script src="/static/script.js" defer></script>
 </body>
 </html>
