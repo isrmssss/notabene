@@ -33,22 +33,30 @@ class PdfParser(BaseParser):
         text = []
         try:
             reader = PdfReader(file_path)
-            for page in reader.pages:
+            for page_idx, page in enumerate(reader.pages):
                 try:
+                    # Пытаемся извлечь обычный текст
                     extracted = page.extract_text()
-                    if extracted:
+                    if extracted and extracted.strip():
                         text.append(extracted)
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"PDF text extraction error on page {page_idx}: {e}")
                 
+                # Обрабатываем изображения на странице
                 try:
-                    for image_file_object in page.images:
-                        ocr_text = self.ocr_parser.parse_bytes(image_file_object.data)
-                        if ocr_text:
-                            text.append(ocr_text)
-                except Exception:
-                    pass
-        except Exception:
+                    # Метод 1: Через page.images
+                    if hasattr(page, 'images'):
+                        for image_file_object in page.images:
+                            try:
+                                ocr_text = self.ocr_parser.parse_bytes(image_file_object.data)
+                                if ocr_text:
+                                    text.append(ocr_text)
+                            except Exception:
+                                pass
+                except Exception as e:
+                    print(f"PDF image extraction error on page {page_idx}: {e}")
+        except Exception as e:
+            print(f"PdfParser Error: {e}")
             return ""
         return clean_text("\n".join(text))
 
@@ -60,19 +68,63 @@ class DocxParser(BaseParser):
         text = []
         try:
             doc = Document(file_path)
-            for paragraph in doc.paragraphs:
-                if paragraph.text:
-                    text.append(paragraph.text)
             
-            for rel_id, part in doc.part.related_parts.items():
-                try:
-                    if "image" in part.contentType:
-                        ocr_text = self.ocr_parser.parse_bytes(part.blob)
-                        if ocr_text:
-                            text.append(ocr_text)
-                except Exception:
-                    pass
-        except Exception:
+            # Обрабатываем параграфы в порядке с встроенными изображениями
+            for paragraph in doc.paragraphs:
+                # Сначала добавляем текст параграфа
+                if paragraph.text.strip():
+                    text.append(paragraph.text)
+                
+                # Затем ищем встроенные изображения в параграфе
+                for run in paragraph.runs:
+                    # Ищем inline и anchor элементы (встроенные рисунки)
+                    inline_shapes = run._element.xpath('.//wp:inline | .//wp:anchor')
+                    for shape_elem in inline_shapes:
+                        try:
+                            # Ищем blip элемент (ссылка на изображение)
+                            blips = shape_elem.xpath('.//a:blip')
+                            for blip in blips:
+                                # Получаем ID встроенного ресурса
+                                embed_id = blip.get(
+                                    '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'
+                                )
+                                if embed_id and embed_id in doc.part.related_parts:
+                                    part = doc.part.related_parts[embed_id]
+                                    if "image" in part.content_type:
+                                        ocr_text = self.ocr_parser.parse_bytes(part.blob)
+                                        if ocr_text:
+                                            text.append(ocr_text)
+                        except Exception:
+                            pass
+            
+            # Обрабатываем таблицы (если есть)
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        for paragraph in cell.paragraphs:
+                            if paragraph.text.strip():
+                                text.append(paragraph.text)
+                            
+                            # Ищем изображения в таблице
+                            for run in paragraph.runs:
+                                inline_shapes = run._element.xpath('.//wp:inline | .//wp:anchor')
+                                for shape_elem in inline_shapes:
+                                    try:
+                                        blips = shape_elem.xpath('.//a:blip')
+                                        for blip in blips:
+                                            embed_id = blip.get(
+                                                '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed'
+                                            )
+                                            if embed_id and embed_id in doc.part.related_parts:
+                                                part = doc.part.related_parts[embed_id]
+                                                if "image" in part.content_type:
+                                                    ocr_text = self.ocr_parser.parse_bytes(part.blob)
+                                                    if ocr_text:
+                                                        text.append(ocr_text)
+                                    except Exception:
+                                        pass
+        except Exception as e:
+            print(f"DocxParser Error: {e}")
             return ""
         return clean_text("\n".join(text))
 
@@ -84,20 +136,38 @@ class PptxParser(BaseParser):
         text = []
         try:
             prs = Presentation(file_path)
-            for slide in prs.slides:
+            for slide_idx, slide in enumerate(prs.slides):
+                # Обрабатываем текст в shapes
                 for shape in slide.shapes:
-                    if hasattr(shape, "text") and shape.text:
+                    if hasattr(shape, "text") and shape.text.strip():
                         text.append(shape.text)
                 
-                for rel_id, part in slide.part.related_parts.items():
+                # Обрабатываем встроенные изображения в shapes
+                for shape in slide.shapes:
                     try:
-                        if "image" in part.contentType:
-                            ocr_text = self.ocr_parser.parse_bytes(part.blob)
+                        if hasattr(shape, "image"):
+                            # Shape содержит изображение
+                            image = shape.image
+                            ocr_text = self.ocr_parser.parse_bytes(image.blob)
                             if ocr_text:
                                 text.append(ocr_text)
                     except Exception:
                         pass
-        except Exception:
+                
+                # Обрабатываем изображения в связанных ресурсах слайда
+                try:
+                    for rel_id, part in slide.part.related_parts.items():
+                        try:
+                            if "image" in part.content_type:
+                                ocr_text = self.ocr_parser.parse_bytes(part.blob)
+                                if ocr_text:
+                                    text.append(ocr_text)
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"PptxParser Error: {e}")
             return ""
         return clean_text("\n".join(text))
 

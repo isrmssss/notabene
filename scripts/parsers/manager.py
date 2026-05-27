@@ -5,14 +5,21 @@ from parsers.text_parser import (
     PlainTextParser, PdfParser, DocxParser, 
     PptxParser, CsvParser, EpubParser
 )
+from parsers.ocr_config import DEFAULT_MODE
 
 class DocumentParserManager:
-    def __init__(self):
+    def __init__(self, ocr_mode: str = DEFAULT_MODE):
+        """
+        Инициализирует менеджер парсеров
+        Args:
+            ocr_mode: Режим работы OCR ("fast", "balanced", "accurate")
+        """
         self._parsers = {}
+        self.ocr_mode = ocr_mode
         self._register_default_parsers()
 
     def _register_default_parsers(self):
-        ocr_parser = OcrParser()
+        ocr_parser = OcrParser(mode=self.ocr_mode)
         text_parser = PlainTextParser()
         
         self._parsers[".txt"] = text_parser
@@ -70,5 +77,14 @@ class DocumentParserManager:
 ### ИНСТРУКЦИЯ ПО ЗАПУСКУ ###
 # from parsers.manager import DocumentParserManager
 
+# # Использование с режимом по умолчанию (balanced)
 # manager = DocumentParserManager()
 # extracted_text = manager.parse_file("path/to/document.pdf")
+
+# # Использование с быстрым режимом
+# manager_fast = DocumentParserManager(ocr_mode="fast")
+# extracted_text = manager_fast.parse_file("path/to/document.pdf")
+
+# # Использование с точным режимом
+# manager_accurate = DocumentParserManager(ocr_mode="accurate")
+# extracted_text = manager_accurate.parse_file("path/to/document.pdf")
