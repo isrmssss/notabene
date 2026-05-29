@@ -9,11 +9,22 @@ sys.path.append(str(project_root / "scripts"))
 
 from parsers.manager import DocumentParserManager
 from parsers.exceptions import UnsupportedFileError, CorruptedFileError
-from parsers.gpu_utils import print_device_info
-from parsers.ocr_config import OCR_MODES
+
+
+def print_device_info():
+    """Выводит информацию о доступном устройстве (GPU/CPU)"""
+    try:
+        import torch
+        device = "CUDA (GPU)" if torch.cuda.is_available() else "CPU"
+        print(f"Device: {device}")
+    except:
+        print("Device: CPU")
+
 
 def run_test(file_path_str: str, ocr_mode: str = "balanced"):
-    manager = DocumentParserManager(ocr_mode=ocr_mode)
+    # ocr_mode игнорируется (для обратной совместимости с тестами)
+    # Используется только balanced режим из config.py
+    manager = DocumentParserManager()
     path = Path(file_path_str)
     
     print(f"\n{'='*60}")
@@ -40,33 +51,21 @@ def run_test(file_path_str: str, ocr_mode: str = "balanced"):
     except FileNotFoundError as e:
         print(f"\n❌ File not found: {e}")
     except UnsupportedFileError as e:
-        print(f"\n❌ Unsupported format: {e.message}")
+        print(f"\n❌ Unsupported format: {e}")
     except CorruptedFileError as e:
-        print(f"\n❌ Corrupted file or OCR failure: {e.message}")
+        print(f"\n❌ Corrupted file or OCR failure: {e}")
     except Exception as e:
         print(f"\n❌ Unexpected system error: {str(e)}")
+
 
 if __name__ == "__main__":
     print_device_info()
     print()
     
-    # Выводим доступные режимы
-    print("🎯 Available OCR Modes:")
-    for mode_name, mode_config in OCR_MODES.items():
-        print(f"   • {mode_name}: {mode_config['description']}")
-    print()
-    
-    ocr_mode = "balanced"  # По умолчанию
     sample_file = "sample.pdf"
     
     if len(sys.argv) > 1:
         sample_file = sys.argv[1]
-        # Проверяем если передан режим
-        if len(sys.argv) > 2:
-            ocr_mode = sys.argv[2]
-            if ocr_mode not in OCR_MODES:
-                print(f"⚠️  Unknown mode '{ocr_mode}', using 'balanced'")
-                ocr_mode = "balanced"
     
-    print(f"Using OCR mode: {ocr_mode}\n")
-    run_test(sample_file, ocr_mode=ocr_mode)
+    print(f"Testing file: {sample_file}\n")
+    run_test(sample_file)
